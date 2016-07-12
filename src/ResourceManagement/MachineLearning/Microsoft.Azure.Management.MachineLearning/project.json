@@ -19,11 +19,15 @@
   },
 
   "dependencies": {
-    "Microsoft.Rest.ClientRuntime.Azure": "[3.3.0,4.0.0)"
+    "Microsoft.Rest.ClientRuntime.Azure": "[3.3.0,4.0.0)",
+    "Microsoft.Rest.ClientRuntime.Azure.Authentication": "2.2.4-preview"
   },
 
   "frameworks": {
     "net45": {
+      "dependencies": {
+        "Microsoft.IdentityModel.Clients.ActiveDirectory": "2.18.206251556"
+      }
     },
     "netstandard1.5": {
       "imports": ["dnxcore50"],

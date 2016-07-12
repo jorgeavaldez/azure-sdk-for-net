@@ -113,6 +113,8 @@ namespace Microsoft.Azure.MachineLearning
             set { this.Definition.Properties.ReadOnlyProperty = value; }
         }
 
+        public string ResourceGroupName { get; set; }
+
         /// <summary>
         /// Flag that controls whether or not to expose sample data in this web service's swagger defintion.
         /// </summary>
@@ -160,8 +162,9 @@ namespace Microsoft.Azure.MachineLearning
         /// <summary>
         /// Creates a new Microsoft.Azure.MachineLearning.WebService from a web service definition file.
         /// </summary>
-        /// <param name="webServiceDefinitionFilePath"></param>
-        WebService(string webServiceDefinitionFilePath)
+        /// <param name="webServiceDefinitionFilePath">Filepath to the web service definition file.</param>
+        /// <param name="client">The management services client. Gets passed in by the external management client.</param>
+        public WebService(string webServiceDefinitionFilePath, AzureMLWebServicesManagementClient client)
         {
             Dictionary<string, string> _paramsDictionary = new Dictionary<string, string>();
 
@@ -169,6 +172,8 @@ namespace Microsoft.Azure.MachineLearning
                 this.InputWebServiceFromWSDFile(_paramsDictionary, webServiceDefinitionFilePath);
 
             this.Definition = ws;
+
+            this._client = client;
         }
 
         /// <summary>
@@ -197,7 +202,7 @@ namespace Microsoft.Azure.MachineLearning
 
         public WebService Update(WebService otherWebService)
         {
-            return null;
+            this._client.WebServices.CreateOrUpdate(this.Definition, this.ResourceGroupName, )
         }
     }
 }
