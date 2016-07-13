@@ -49,13 +49,28 @@ namespace Microsoft.Azure.MachineLearning.Examples
             // note that credentials are not saved except for in the cache
             var managementClient = new WebServiceManagementClient(cred);
 
-            // now we use the management client to create a web service object from a web service definition file
-            var webService = managementClient.CreateWebServiceObject("webservicedefinitionfile.json", "JorgeResourceGroup");
+            // now we use the management client to get an existing deployed web service
+            var webService = managementClient.GetWebServiceFromResourceGroup("YOUR-RESOURCE-GROUP-NAME", "YOUR-WEB-SERVICE-NAME");
+
+            Console.WriteLine("Created web service: " + webService.Title);
+
             // Notice we're getting a web service from an experiment now
-            var updatedWebService = managementClient.GetWebServiceFromExperiment("YOUR-WORKSPACE-ID", "YOUR-EXPERIMENT-ID");
+            var updatedWebService = managementClient.CreateWebServiceObject("webservicedefinitionfile.json", "JorgeResourceGroup");
 
             // webService is now updated using the definition from updatedWebService
             webService.Update(updatedWebService);
+
+            // now we use the management client to create a web service from an experiment
+            webService = managementClient.GetWebServiceFromExperiment("YOUR-WORKSPACE-ID", "YOUR-EXPERIMENT-ID");
+
+            // Now we deploy the experiment web service
+            managementClient.DeployWebService(webService);
+
+            // We can grab the newly deployed web service now...
+            webService = managementClient.GetWebServiceFromResourceGroup("YOUR-RESOURCE-GROUP-NAME", "YOUR-WEB-SERVICE-NAME");
+
+            // ... and delete it!
+            webService.Delete();
         }
     }
 }

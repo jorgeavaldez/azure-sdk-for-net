@@ -115,6 +115,42 @@ namespace Microsoft.Azure.MachineLearning
 
             return actualWebService;
         }
+
+        /// <summary>
+        /// Returns a list of web service objects within a resource group.
+        /// </summary>
+        /// <param name="resourceGroupName">The resource group from which to retrieve the list of web services.</param>
+        /// <returns>A list of web services from the specified resource group.</returns>
+        public List<WebService> ListWebServicesFromResourceGroup(string resourceGroupName)
+        {
+            var webServices = this._client.WebServices.ListInResourceGroup(resourceGroupName).Value;
+            var webServiceObjects = new List<WebService>();
+
+            foreach (Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebService ws in webServices)
+            {
+                webServiceObjects.Add(new WebService(ws, resourceGroupName, this._client));
+            }
+
+            return webServiceObjects;
+        }
+
+        /// <summary>
+        /// Returns a list of web service objects within the client subscription.
+        /// </summary>
+        /// <returns>A list of web services from the client subscription.</returns>
+        public List<WebService> ListWebServicesFromSubscription()
+        {
+            var webServices = this._client.WebServices.List().Value;
+            var webServiceObjects = new List<WebService>();
+
+            foreach (Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebService ws in webServices)
+            {
+                // TODO: Get resource group from web service ID.
+                webServiceObjects.Add(new WebService(ws, "", this._client));
+            }
+
+            return webServiceObjects;
+        }
     }
 
     public static class CastUtilities
@@ -129,6 +165,9 @@ namespace Microsoft.Azure.MachineLearning
         /// <returns>An object converted to the new type T.</returns>
         public static T Cast<T>(this Object myobj)
         {
+            // TODO: Fix this for compatability .NET Core libraries
+            // Also look into removing completely
+
             Type objectType = myobj.GetType();
             Type target = typeof(T);
 
