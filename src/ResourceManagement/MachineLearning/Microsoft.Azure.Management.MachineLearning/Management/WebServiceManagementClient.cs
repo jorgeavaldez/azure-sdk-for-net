@@ -70,8 +70,10 @@ namespace Microsoft.Azure.MachineLearning
         /// Deploys the given web service in the resource group it specifies.
         /// </summary>
         /// <param name="webService">The web service to be deployed.</param>
-        public void DeployWebService(WebService webService)
+        /// <param name="force">Optional: If a web service with the same name exists, just go ahead and override it if true. Otherwise, throw an exception.</param>
+        public void DeployWebService(WebService webService, bool force = false)
         {
+            // TODO: Write the check to see if the web service exists.
             this._client.WebServices.CreateOrUpdate(webService.Definition, webService.ResourceGroupName,
                 webService.Title);
         }
