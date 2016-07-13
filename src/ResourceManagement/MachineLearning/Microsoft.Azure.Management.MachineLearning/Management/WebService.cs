@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.Management.MachineLearning.WebServices;
 using Microsoft.Azure.Management.MachineLearning.WebServices.Models;
@@ -199,6 +200,8 @@ namespace Microsoft.Azure.MachineLearning
         private Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebService InputWebServiceFromWSDFile(Dictionary<string, string> webServiceParameters, string webServiceDefinitionFilePath)
         {
             string wsDefinition;
+
+            //StreamReader r = new StreamReader("file.txt");
 
             using (StreamReader r = new StreamReader(webServiceDefinitionFilePath))
             {
