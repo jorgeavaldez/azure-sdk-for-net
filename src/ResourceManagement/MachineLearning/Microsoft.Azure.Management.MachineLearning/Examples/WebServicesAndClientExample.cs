@@ -47,7 +47,7 @@ namespace Microsoft.Azure.MachineLearning.Examples
 
             // We need to make a management client now and pass it our credentials so it can authenticate
             // note that credentials are not saved except for in the cache
-            var managementClient = new WebServiceManagementClient(cred);
+            var managementClient = new WebServiceManagementClient("YOUR-SUBSCRIPTION-ID", cred);
 
             // now we use the management client to get an existing deployed web service
             var webService = managementClient.GetWebServiceFromResourceGroup("YOUR-RESOURCE-GROUP-NAME", "YOUR-WEB-SERVICE-NAME");
@@ -71,6 +71,27 @@ namespace Microsoft.Azure.MachineLearning.Examples
 
             // ... and delete it!
             webService.Delete();
+
+            // Now we're going to get a list of web services from the resource group
+            var webServices = managementClient.ListWebServicesFromResourceGroup("YOUR-RESOURCE-GROUP-NAME");
+
+            // And we're going to print the titles out
+            Console.WriteLine("Web services in resource group:\n");
+
+            foreach (var ws in webServices)
+            {
+                Console.WriteLine(ws.Title);
+            }
+
+            // Now we're going to get a list of web services from the current client's subscription
+            webServices = managementClient.ListWebServicesFromSubscription();
+
+            // And we're going to delete them all!
+            foreach(var ws in webServices)
+            {
+                Console.WriteLine("Deleted web service " + ws.Title);
+                ws.Delete();
+            }
         }
     }
 }
