@@ -2,13 +2,19 @@
 using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.Management.MachineLearning.WebServices;
 using Microsoft.Azure.Management.MachineLearning.Studio.WebService;
 using Microsoft.Azure.Management.MachineLearning.WebServices.Models;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.Rest;
+using Microsoft.Rest.Azure;
+using Microsoft.Rest.Serialization;
+using Newtonsoft.Json;
 
 namespace Microsoft.Azure.MachineLearning
 {
@@ -16,7 +22,7 @@ namespace Microsoft.Azure.MachineLearning
     {
         private const string MANAGEMENT_URL = "https://management.azure.com";
         private AzureMLWebServicesManagementClient _client;
-        private StudioWebService StudioWebServiceClient;
+        private StudioServiceClient StudioWebServiceClient;
 
         /// <summary>
         /// Empty constructor. Takes user credentials from the authentication session and uses them to authenticate the internal client.
@@ -25,7 +31,7 @@ namespace Microsoft.Azure.MachineLearning
         public WebServiceManagementClient(ServiceClientCredentials userCredentials)
         {
             _client = new AzureMLWebServicesManagementClient(userCredentials);
-            StudioWebServiceClient = new StudioWebService(userCredentials);
+            StudioWebServiceClient = new StudioServiceClient(userCredentials);
         }
 
         /// <summary>
@@ -35,7 +41,7 @@ namespace Microsoft.Azure.MachineLearning
         public WebServiceManagementClient(string subscriptionId, ServiceClientCredentials userCredentials)
         {
             _client = new AzureMLWebServicesManagementClient(userCredentials);
-            StudioWebServiceClient = new StudioWebService(userCredentials);
+            StudioWebServiceClient = new StudioServiceClient(userCredentials);
 
             _client.SubscriptionId = subscriptionId;
         }
@@ -73,9 +79,33 @@ namespace Microsoft.Azure.MachineLearning
         /// <param name="force">Optional: If a web service with the same name exists, just go ahead and override it if true. Otherwise, throw an exception.</param>
         public void DeployWebService(WebService webService, bool force = false)
         {
-            // TODO: Write the check to see if the web service exists.
-            this._client.WebServices.CreateOrUpdate(webService.Definition, webService.ResourceGroupName,
-                webService.Title);
+            if (!force)
+            {
+                try
+                {
+                    // If this throws an error, then it doesn't exist.
+                    var existingWebService = this._client.WebServices.Get(webService.ResourceGroupName, webService.Title);
+
+                    throw new InvalidOperationException("force flag was set to false; a web service in the resource group " + 
+                        webService.ResourceGroupName + " with the name " + webService.Title + " already exists.");
+                }
+
+                catch (Exception)
+                {
+                    this._client.WebServices.CreateOrUpdate(webService.Definition, webService.ResourceGroupName,
+                        webService.Title);
+
+                    webService.Keys = this._client.WebServices.ListKeys(webService.ResourceGroupName, webService.Title);
+                }
+            }
+
+            else
+            {
+                this._client.WebServices.CreateOrUpdate(webService.Definition, webService.ResourceGroupName,
+                    webService.Title);
+
+                webService.Keys = this._client.WebServices.ListKeys(webService.ResourceGroupName, webService.Title);
+            }
         }
 
         /// <summary>
@@ -105,15 +135,38 @@ namespace Microsoft.Azure.MachineLearning
 
             var subscriptionId = this._client.SubscriptionId;
 
-            // Web service from the studio api
-            Microsoft.Azure.Management.MachineLearning.Studio.WebService.Models.WebService studioWebService = StudioWebServiceClient.WebServiceDefinition.Get(workspaceId, experimentId);
+            Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebService studioDirectWebService = StudioWebServiceClient.Get(workspaceId, experimentId);
 
-            // Convert it into an internal management web service model
-            Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebService internalService =
-                CastUtilities.Cast<Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebService>(studioWebService);
+            Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebServiceProperties editedStudioDirectWebServiceProperties = new WebServiceProperties(
+                studioDirectWebService.Properties.Title,
+                studioDirectWebService.Properties.Description,
+                studioDirectWebService.Properties.CreatedOn,
+                studioDirectWebService.Properties.ModifiedOn,
+                "Unknown", // ProvisioningState must be set to unknown here
+                studioDirectWebService.Properties.Keys,
+                studioDirectWebService.Properties.ReadOnlyProperty,
+                studioDirectWebService.Properties.SwaggerLocation,
+                studioDirectWebService.Properties.ExposeSampleData,
+                studioDirectWebService.Properties.RealtimeConfiguration,
+                studioDirectWebService.Properties.Diagnostics,
+                studioDirectWebService.Properties.StorageAccount,
+                studioDirectWebService.Properties.MachineLearningWorkspace,
+                studioDirectWebService.Properties.CommitmentPlan,
+                studioDirectWebService.Properties.Input,
+                studioDirectWebService.Properties.Output,
+                studioDirectWebService.Properties.ExampleRequest,
+                studioDirectWebService.Properties.Assets,
+                studioDirectWebService.Properties.Parameters);
 
-            // The new web service model
-            var actualWebService = new WebService(internalService, "", this._client);
+            Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebService editedStudioDirectWebService = new Management.MachineLearning.WebServices.Models.WebService(
+                studioDirectWebService.Location,
+                editedStudioDirectWebServiceProperties,
+                studioDirectWebService.Id,
+                studioDirectWebService.Name,
+                studioDirectWebService.Type,
+                studioDirectWebService.Tags);
+
+            var actualWebService = new WebService(editedStudioDirectWebService, "", this._client);
 
             return actualWebService;
         }
@@ -148,55 +201,17 @@ namespace Microsoft.Azure.MachineLearning
             foreach (Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebService ws in webServices)
             {
                 // TODO: Get resource group from web service ID.
+                var resourceGroup = this._client.WebServices.Get("", "");
+
+                // TEST
+
                 webServiceObjects.Add(new WebService(ws, "", this._client));
             }
 
             return webServiceObjects;
         }
-    }
 
-    public static class CastUtilities
-    {
-        /// <summary>
-        /// This function comes from the following stack overflow thread. http://stackoverflow.com/questions/3672742/cast-class-into-another-class-or-convert-class-to-another
-        /// It casts object myobj to type T if they have similar data members.
-        /// Used to cast web service models from Studio.WebService to WebServices from the previous AutoRest autogenerated code.
-        /// </summary>
-        /// <typeparam name="T">The type to which the conversion is happening.</typeparam>
-        /// <param name="myobj">The object being converted.</param>
-        /// <returns>An object converted to the new type T.</returns>
-        public static T Cast<T>(this Object myobj)
-        {
-            // TODO: Fix this for compatability .NET Core libraries
-            // Also look into removing completely
+        
 
-            Type objectType = myobj.GetType();
-            Type target = typeof(T);
-
-            var x = Activator.CreateInstance(target, false);
-
-            var z = from source in objectType.GetMembers().ToList()
-                where source.MemberType == MemberTypes.Property
-                select source;
-
-            var d = from source in target.GetMembers().ToList()
-                where source.MemberType == MemberTypes.Property
-                select source;
-
-            List<MemberInfo> members = d.Where(memberInfo => d.Select(c => c.Name)
-                .ToList().Contains(memberInfo.Name)).ToList();
-
-            PropertyInfo propertyInfo;
-
-            object value;
-            foreach (var memberInfo in members)
-            {
-                propertyInfo = typeof(T).GetProperty(memberInfo.Name);
-                value = myobj.GetType().GetProperty(memberInfo.Name).GetValue(myobj, null);
-
-                propertyInfo.SetValue(x, value, null);
-            }
-            return (T)x;
-        }
     }
 }
