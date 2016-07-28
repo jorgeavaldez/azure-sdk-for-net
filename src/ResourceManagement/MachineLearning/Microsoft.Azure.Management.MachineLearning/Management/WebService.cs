@@ -182,7 +182,10 @@ namespace Microsoft.Azure.MachineLearning
             Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebService ws =
                 this.InputWebServiceFromWSDFile(_paramsDictionary, webServiceDefinitionFilePath);
 
+
             this.Definition = ws;
+
+            this.ResourceGroupName = resourceGroup;
 
             this._client = client;
         }
@@ -228,9 +231,9 @@ namespace Microsoft.Azure.MachineLearning
         /// Updates this web service and updates the internal state.
         /// </summary>
         /// <param name="otherWebService">The other web service from which this web service is being updated.</param>
-        public void Update(WebService otherWebService)
+        public void Update()
         {
-            Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebService ws = this._client.WebServices.CreateOrUpdate(otherWebService.Definition, this.ResourceGroupName, this.Title);
+            Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebService ws = this._client.WebServices.CreateOrUpdate(this.Definition, this.ResourceGroupName, this.Title);
 
             this.Definition = ws;
         }
@@ -239,7 +242,7 @@ namespace Microsoft.Azure.MachineLearning
         /// Updates this web service and updates the internal state. Takes an AutoRest web service model.
         /// </summary>
         /// <param name="otherWebService">The other AutoRest web service model from which this web service is being updated.</param>
-        public void Update(Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebService otherWebService)
+        internal void Update(Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebService otherWebService)
         {
             Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebService ws = this._client.WebServices.CreateOrUpdate(otherWebService, this.ResourceGroupName, this.Title);
 

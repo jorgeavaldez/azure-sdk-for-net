@@ -13,8 +13,8 @@
   },
 
   "buildOptions": {
-    "delaySign": true,
-    "publicSign": false,
+    "delaySign": false,
+    "publicSign": true,
     "keyFile": "../../../../tools/MSSharedLibKey.snk"
   },
 
