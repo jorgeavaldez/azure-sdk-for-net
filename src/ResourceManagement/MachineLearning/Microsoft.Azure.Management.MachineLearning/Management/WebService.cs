@@ -238,7 +238,7 @@ namespace Microsoft.Azure.MachineLearning
         /// <param name="otherWebService">The other web service from which this web service is being updated.</param>
         public void Update()
         {
-            Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebService ws = this._client.WebServices.CreateOrUpdate(this.Definition, this.ResourceGroupName, this.Title);
+            Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebService ws = this._client.WebServices.Patch(this.Definition, this.ResourceGroupName, this.Title);
 
             this.Definition = ws;
         }

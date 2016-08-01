@@ -24,6 +24,12 @@ namespace Microsoft.Azure.MachineLearning
         private AzureMLWebServicesManagementClient _client;
         private StudioServiceClient StudioWebServiceClient;
 
+        public string SubscriptionID
+        {
+            get { return this._client.SubscriptionId; }
+            set { this._client.SubscriptionId = value; }
+        }
+
         /// <summary>
         /// Empty constructor. Takes user credentials from the authentication session and uses them to authenticate the internal client.
         /// </summary>
@@ -178,15 +184,19 @@ namespace Microsoft.Azure.MachineLearning
         /// <returns>A list of web services from the specified resource group.</returns>
         public List<WebService> ListWebServicesFromResourceGroup(string resourceGroupName)
         {
-            var webServices = this._client.WebServices.ListInResourceGroup(resourceGroupName).Value;
-            var webServiceObjects = new List<WebService>();
+            var intermediateWebServices = this._client.WebServices.ListInResourceGroup(resourceGroupName).Value;
+            var finalWebServiceObjects = new List<WebService>();
 
-            foreach (Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebService ws in webServices)
+            foreach (var ws in intermediateWebServices)
             {
-                webServiceObjects.Add(new WebService(ws, resourceGroupName, this._client));
+                if (!(String.IsNullOrWhiteSpace(ws.Name)) && !(String.IsNullOrWhiteSpace(ws.Properties.Title)))
+                {
+                    var castWebService = new WebService(ws, resourceGroupName, this._client);
+                    finalWebServiceObjects.Add(castWebService);
+                }
             }
 
-            return webServiceObjects;
+            return finalWebServiceObjects;
         }
 
         /// <summary>
