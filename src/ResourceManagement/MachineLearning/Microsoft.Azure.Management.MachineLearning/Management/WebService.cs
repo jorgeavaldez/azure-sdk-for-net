@@ -34,7 +34,11 @@ namespace Microsoft.Azure.MachineLearning
         public string Title
         {
             get { return this.Definition.Properties.Title; }
-            set { this.Definition.Properties.Title = value; }
+            set
+            {
+                this.Definition.Properties.Title = value;
+                this.Definition.Name = value;
+            }
         }
 
         /// <summary>
@@ -200,6 +204,7 @@ namespace Microsoft.Azure.MachineLearning
         {
             this.Definition = definitionWebService;
             this._client = client;
+            this.ResourceGroupName = resourceGroup;
         }
 
         /// <summary>
