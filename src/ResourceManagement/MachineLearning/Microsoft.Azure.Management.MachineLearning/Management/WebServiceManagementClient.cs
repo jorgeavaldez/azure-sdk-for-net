@@ -1,20 +1,25 @@
-﻿using System;
-using System.CodeDom;
+﻿// 
+// Copyright (c) Microsoft.  All rights reserved. 
+// 
+// Licensed under the Apache License, Version 2.0 (the "License"); 
+// you may not use this file except in compliance with the License. 
+// You may obtain a copy of the License at 
+//   http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+// See the License for the specific language governing permissions and 
+// limitations under the License. 
+//
+
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Azure.Management.MachineLearning.WebServices;
 using Microsoft.Azure.Management.MachineLearning.Studio.WebService;
 using Microsoft.Azure.Management.MachineLearning.WebServices.Models;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.Rest;
 using Microsoft.Rest.Azure;
-using Microsoft.Rest.Serialization;
-using Newtonsoft.Json;
 
 namespace Microsoft.Azure.MachineLearning
 {
@@ -57,7 +62,7 @@ namespace Microsoft.Azure.MachineLearning
         /// </summary>
         /// <param name="webServiceDefintionFilePath">The file path for the web service definition file. Expecting a JSON string within.</param>
         /// <param name="resourceGroup">The resource group in which the web service is deployed.</param>
-        /// <returns></returns>
+        /// <returns>A new initialized web service object.</returns>
         public WebService CreateWebServiceObject(string webServiceDefintionFilePath, string resourceGroup)
         {
             var ws = new WebService(webServiceDefintionFilePath, resourceGroup,_client);
@@ -74,34 +79,47 @@ namespace Microsoft.Azure.MachineLearning
             Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebService webService,
             string resourceGroup)
         {
-            var nWebService = new WebService(webService, resourceGroup,this._client);
-            return nWebService;
+            var newWebService = new WebService(webService, resourceGroup,this._client);
+            return newWebService;
         }
 
         /// <summary>
         /// Deploys the given web service in the resource group it specifies.
         /// </summary>
         /// <param name="webService">The web service to be deployed.</param>
-        /// <param name="force">Optional: If a web service with the same name exists, just go ahead and override it if true. Otherwise, throw an exception.</param>
-        public void DeployWebService(WebService webService, bool force = false)
+        /// <param name="overwrite">Optional: If a web service with the same name exists, just go ahead and override it if true. Otherwise, throw an exception.</param>
+        public void DeployWebService(WebService webService, bool overwrite = false)
         {
-            if (!force)
+            if (!overwrite)
             {
+                var webServiceExists = false;
                 try
                 {
-                    // If this throws an error, then it doesn't exist.
                     var existingWebService = this._client.WebServices.Get(webService.ResourceGroupName, webService.Title);
-
-                    throw new InvalidOperationException("force flag was set to false; a web service in the resource group " + 
-                        webService.ResourceGroupName + " with the name " + webService.Title + " already exists.");
+                    webServiceExists = true;
                 }
 
-                catch (Exception)
+                catch (CloudException cloudException)
                 {
                     this._client.WebServices.CreateOrUpdate(webService.Definition, webService.ResourceGroupName,
                         webService.Title);
 
                     webService.Keys = this._client.WebServices.ListKeys(webService.ResourceGroupName, webService.Title);
+                }
+
+                catch (ValidationException validationException)
+                {
+                    this._client.WebServices.CreateOrUpdate(webService.Definition, webService.ResourceGroupName,
+                        webService.Title);
+
+                    webService.Keys = this._client.WebServices.ListKeys(webService.ResourceGroupName, webService.Title);
+                }
+
+                if (webServiceExists)
+                {
+                    // Don't deploy if not there
+                    throw new InvalidOperationException("overwrite flag was set to false; a web service in the resource group " + 
+                        webService.ResourceGroupName + " with the name " + webService.Title + " already exists.");
                 }
             }
 
@@ -120,7 +138,7 @@ namespace Microsoft.Azure.MachineLearning
         /// <param name="resourceGroupName">The resource group from which to get the web service.</param>
         /// <param name="webServiceName">The name of the web service to get.</param>
         /// <returns>The web service.</returns>
-        public WebService GetWebServiceFromResourceGroup(string resourceGroupName, string webServiceName)
+        public WebService GetWebService(string resourceGroupName, string webServiceName)
         {
             // Get the definition web service from the inner client
             var webServiceDefinition = this._client.WebServices.Get(resourceGroupName, webServiceName);
@@ -135,13 +153,13 @@ namespace Microsoft.Azure.MachineLearning
         /// <param name="workspaceId">The workspace ID of the experiment.</param>
         /// <param name="experimentId">The experiment's ID.</param>
         /// <returns>The web service itself.</returns>
-        public WebService GetWebServiceFromExperiment(string workspaceId, string experimentId)
+        public WebService GetWebServiceFromExperiment(string workspaceId, string experimentId, string workspaceAuthorizationToken)
         {
             // TODO: Fill in missing info from provided user stuff.
 
             var subscriptionId = this._client.SubscriptionId;
 
-            Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebService studioDirectWebService = StudioWebServiceClient.Get(workspaceId, experimentId);
+            Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebService studioDirectWebService = StudioWebServiceClient.GetWebServiceDefinition(workspaceId, experimentId, workspaceAuthorizationToken);
 
             Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebServiceProperties editedStudioDirectWebServiceProperties = new WebServiceProperties(
                 studioDirectWebService.Properties.Title,
@@ -172,7 +190,7 @@ namespace Microsoft.Azure.MachineLearning
                 studioDirectWebService.Type,
                 studioDirectWebService.Tags);
 
-            var actualWebService = new WebService(editedStudioDirectWebService, "", this._client);
+            var actualWebService = new WebService(editedStudioDirectWebService, string.Empty, this._client);
 
             return actualWebService;
         }
@@ -208,20 +226,14 @@ namespace Microsoft.Azure.MachineLearning
             var webServices = this._client.WebServices.List().Value;
             var webServiceObjects = new List<WebService>();
 
-            foreach (Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebService ws in webServices)
+            foreach (var ws in webServices)
             {
                 // TODO: Get resource group from web service ID.
-                var resourceGroup = this._client.WebServices.Get("", "");
-
-                // TEST
 
                 webServiceObjects.Add(new WebService(ws, "", this._client));
             }
 
             return webServiceObjects;
         }
-
-        
-
     }
 }

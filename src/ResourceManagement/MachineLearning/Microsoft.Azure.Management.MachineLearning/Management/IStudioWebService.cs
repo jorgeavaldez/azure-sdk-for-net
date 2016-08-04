@@ -9,14 +9,8 @@
 namespace Microsoft.Azure.Management.MachineLearning.Studio.WebService
 {
     using System;
-    using System.Collections.Generic;
-    using System.Net.Http;
-    using System.Threading;
-    using System.Threading.Tasks;
     using Newtonsoft.Json;
     using Microsoft.Rest;
-    using Microsoft.Rest.Azure;
-    using Models;
 
     /// <summary>
     /// These APIs allow end users to operate on Azure Machine Learning Web
@@ -30,7 +24,7 @@ namespace Microsoft.Azure.Management.MachineLearning.Studio.WebService
     /// Subscription&lt;/li&gt;&lt;li&gt;Get Web Services
     /// Keys&lt;/li&gt;&lt;/ul&gt;
     /// </summary>
-    public partial interface IStudioWebService : IDisposable
+    public interface IStudioWebService : IDisposable
     {
         /// <summary>
         /// The base URI of the service.
@@ -69,11 +63,9 @@ namespace Microsoft.Azure.Management.MachineLearning.Studio.WebService
         /// </summary>
         bool? GenerateClientRequestId { get; set; }
 
-
         /// <summary>
         /// Gets the IWebServiceDefinitionOperations.
         /// </summary>
         IWebServiceDefinitionOperations WebServiceDefinition { get; }
-
     }
 }

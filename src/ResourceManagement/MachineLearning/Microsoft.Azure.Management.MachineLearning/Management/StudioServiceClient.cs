@@ -1,4 +1,19 @@
-﻿using System;
+﻿// 
+// Copyright (c) Microsoft.  All rights reserved. 
+// 
+// Licensed under the Apache License, Version 2.0 (the "License"); 
+// you may not use this file except in compliance with the License. 
+// You may obtain a copy of the License at 
+//   http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+// See the License for the specific language governing permissions and 
+// limitations under the License. 
+// 
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -22,11 +37,9 @@ namespace Microsoft.Azure.MachineLearning
             this._client = new StudioWebService(credentials);            
         }
 
-        // GetWithHttpMessagesAsync
-       /// <summary>
+        /// <summary>
         /// Gets a web service definition
         /// </summary>
-        /// Retrive the web service definition from an experiement.
         /// <param name='workspaceId'>
         /// The id of the workspace where the experiment resides.
         /// </param>
@@ -42,7 +55,7 @@ namespace Microsoft.Azure.MachineLearning
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        public async Task<AzureOperationResponse<Azure.Management.MachineLearning.WebServices.Models.WebService>> GetWithHttpMessagesAsync(string workspaceId, string experimentId, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        internal async Task<AzureOperationResponse<Azure.Management.MachineLearning.WebServices.Models.WebService>> GetWebServiceDefinitionWithHttpMessagesAsync(string workspaceId, string experimentId, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (workspaceId == null)
             {
@@ -196,13 +209,21 @@ namespace Microsoft.Azure.MachineLearning
             return _result;
         } 
 
+        public async Task<AzureOperationResponse<Azure.Management.MachineLearning.WebServices.Models.WebService>> GetWebServiceDefinitionWithHttpMessagesAsync(string workspaceId, string experimentId, string workspaceAuthorizationToken, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            var newCustomHeaders = customHeaders;
+            var newCustomHeaderList = new List<string>();
+
+            newCustomHeaderList.Add(workspaceAuthorizationToken);
+
+            customHeaders.Add("x-ms-metaanalytics-authorizationtoken", newCustomHeaderList);
+
+            return await this.GetWebServiceDefinitionWithHttpMessagesAsync(workspaceId, experimentId, newCustomHeaders, cancellationToken);
+        }
+
         /// <summary>
         /// Gets a web service definition
         /// </summary>
-        /// Retrive the web service definition from an experiement.
-        /// <param name='operations'>
-        /// The operations group for this extension method.
-        /// </param>
         /// <param name='workspaceId'>
         /// The id of the workspace where the experiment resides.
         /// </param>
@@ -212,9 +233,9 @@ namespace Microsoft.Azure.MachineLearning
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        public async Task<Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebService> GetAsync(string workspaceId, string experimentId, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebService> GetWebServiceDefinitionAsync(string workspaceId, string experimentId, string workspaceAuthorizationToken, CancellationToken cancellationToken = default(CancellationToken))
         {
-            using (var _result = await this.GetWithHttpMessagesAsync(workspaceId, experimentId, null, cancellationToken).ConfigureAwait(false))
+            using (var _result = await this.GetWebServiceDefinitionWithHttpMessagesAsync(workspaceId, experimentId, workspaceAuthorizationToken, null, cancellationToken).ConfigureAwait(false))
             {
                 return _result.Body;
             }
@@ -223,20 +244,16 @@ namespace Microsoft.Azure.MachineLearning
         /// <summary>
         /// Gets a web service definition
         /// </summary>
-        /// Retrive the web service definition from an experiement.
-        /// <param name='operations'>
-        /// The operations group for this extension method.
-        /// </param>
         /// <param name='workspaceId'>
         /// The id of the workspace where the experiment resides.
         /// </param>
         /// <param name='experimentId'>
         /// The id of the experiment within the workspace referred to by workspaceId.
         /// </param>
-        public Azure.Management.MachineLearning.WebServices.Models.WebService Get(string workspaceId, string experimentId)
+        public Azure.Management.MachineLearning.WebServices.Models.WebService GetWebServiceDefinition(string workspaceId, string experimentId, string workspaceAuthorizationToken)
         {
             // s is the state object we pass through. Here I pass this as the state object. This then gets passed as an object and so it must be cast to a member of this class.
-            return Task.Factory.StartNew(s => ((StudioServiceClient)s).GetAsync(workspaceId, experimentId), this, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Default).Unwrap().GetAwaiter().GetResult();
+            return Task.Factory.StartNew(s => ((StudioServiceClient)s).GetWebServiceDefinitionAsync(workspaceId, experimentId, workspaceAuthorizationToken), this, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Default).Unwrap().GetAwaiter().GetResult();
         }
 
     }
