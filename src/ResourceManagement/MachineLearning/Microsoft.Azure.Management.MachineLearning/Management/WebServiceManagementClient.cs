@@ -27,7 +27,7 @@ namespace Microsoft.Azure.MachineLearning
     {
         private const string MANAGEMENT_URL = "https://management.azure.com";
         private AzureMLWebServicesManagementClient _client;
-        private StudioServiceClient StudioWebServiceClient;
+        public StudioServiceClient StudioWebServiceClient;
 
         public string SubscriptionID
         {
@@ -159,36 +159,38 @@ namespace Microsoft.Azure.MachineLearning
 
             var subscriptionId = this._client.SubscriptionId;
 
-            Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebService studioDirectWebService = StudioWebServiceClient.GetWebServiceDefinition(workspaceId, experimentId, workspaceAuthorizationToken);
+            var studioDirectWebService = StudioWebServiceClient.GetWebServiceDefinition(workspaceId, experimentId, workspaceAuthorizationToken);
 
             Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebServiceProperties editedStudioDirectWebServiceProperties = new WebServiceProperties(
-                studioDirectWebService.Properties.Title,
-                studioDirectWebService.Properties.Description,
-                studioDirectWebService.Properties.CreatedOn,
-                studioDirectWebService.Properties.ModifiedOn,
+                studioDirectWebService.Title,
+                studioDirectWebService.Description,
+                studioDirectWebService.CreatedOn,
+                studioDirectWebService.ModifiedOn,
                 "Unknown", // ProvisioningState must be set to unknown here
-                studioDirectWebService.Properties.Keys,
-                studioDirectWebService.Properties.ReadOnlyProperty,
-                studioDirectWebService.Properties.SwaggerLocation,
-                studioDirectWebService.Properties.ExposeSampleData,
-                studioDirectWebService.Properties.RealtimeConfiguration,
-                studioDirectWebService.Properties.Diagnostics,
-                studioDirectWebService.Properties.StorageAccount,
-                studioDirectWebService.Properties.MachineLearningWorkspace,
-                studioDirectWebService.Properties.CommitmentPlan,
-                studioDirectWebService.Properties.Input,
-                studioDirectWebService.Properties.Output,
-                studioDirectWebService.Properties.ExampleRequest,
-                studioDirectWebService.Properties.Assets,
-                studioDirectWebService.Properties.Parameters);
+                studioDirectWebService.Keys,
+                studioDirectWebService.ReadOnlyProperty,
+                studioDirectWebService.SwaggerLocation,
+                studioDirectWebService.ExposeSampleData,
+                studioDirectWebService.RealtimeConfiguration,
+                studioDirectWebService.Diagnostics,
+                studioDirectWebService.StorageAccount,
+                studioDirectWebService.MachineLearningWorkspace,
+                studioDirectWebService.CommitmentPlan,
+                studioDirectWebService.Input,
+                studioDirectWebService.Output,
+                studioDirectWebService.ExampleRequest,
+                studioDirectWebService.Assets,
+                studioDirectWebService.Parameters);
 
+            // All of the null properties should be filled in by the user before they try to deploy this web service.
+            // TODO: validate this stuff before deployment
             Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebService editedStudioDirectWebService = new Management.MachineLearning.WebServices.Models.WebService(
-                studioDirectWebService.Location,
+                null,
                 editedStudioDirectWebServiceProperties,
-                studioDirectWebService.Id,
-                studioDirectWebService.Name,
-                studioDirectWebService.Type,
-                studioDirectWebService.Tags);
+                null,
+                null,
+                null,
+                null);
 
             var actualWebService = new WebService(editedStudioDirectWebService, string.Empty, this._client);
 

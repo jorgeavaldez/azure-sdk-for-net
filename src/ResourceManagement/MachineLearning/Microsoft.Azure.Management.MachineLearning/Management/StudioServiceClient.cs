@@ -28,7 +28,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Azure.MachineLearning
 {
-    internal class StudioServiceClient
+    public class StudioServiceClient
     {
         internal StudioWebService _client { get; set; }
 
@@ -55,8 +55,18 @@ namespace Microsoft.Azure.MachineLearning
         /// <return>
         /// A response object containing the response body and response headers.
         /// </return>
-        internal async Task<AzureOperationResponse<Azure.Management.MachineLearning.WebServices.Models.WebService>> GetWebServiceDefinitionWithHttpMessagesAsync(string workspaceId, string experimentId, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
-        {
+        public async Task<AzureOperationResponse<Azure.Management.MachineLearning.WebServices.Models.WebServicePropertiesForGraph>> GetWebServiceDefinitionWithHttpMessagesAsync(string workspaceId, string experimentId, string workspaceAuthorizationToken, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
+        { 
+            // Adding the authorization token as a custom header.
+            var newCustomHeaders = customHeaders ?? new Dictionary<string, List<string>>();
+            var newCustomHeaderList = new List<string>();
+
+            newCustomHeaderList.Add(workspaceAuthorizationToken);
+
+            newCustomHeaders.Add("x-ms-metaanalytics-authorizationtoken", newCustomHeaderList);
+
+            customHeaders = newCustomHeaders;
+
             if (workspaceId == null)
             {
                 throw new ValidationException(ValidationRules.CannotBeNull, "workspaceId");
@@ -177,7 +187,7 @@ namespace Microsoft.Azure.MachineLearning
                 throw ex;
             }
             // Create Result
-            var _result = new AzureOperationResponse<Azure.Management.MachineLearning.WebServices.Models.WebService>();
+            var _result = new AzureOperationResponse<Azure.Management.MachineLearning.WebServices.Models.WebServicePropertiesForGraph>();
             _result.Request = _httpRequest;
             _result.Response = _httpResponse;
             if (_httpResponse.Headers.Contains("x-ms-request-id"))
@@ -190,7 +200,7 @@ namespace Microsoft.Azure.MachineLearning
                 _responseContent = await _httpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
                 try
                 {
-                    _result.Body = SafeJsonConvert.DeserializeObject<Azure.Management.MachineLearning.WebServices.Models.WebService>(_responseContent, this._client.DeserializationSettings);
+                    _result.Body = SafeJsonConvert.DeserializeObject<Azure.Management.MachineLearning.WebServices.Models.WebServicePropertiesForGraph>(_responseContent, this._client.DeserializationSettings);
                 }
                 catch (JsonException ex)
                 {
@@ -209,18 +219,6 @@ namespace Microsoft.Azure.MachineLearning
             return _result;
         } 
 
-        public async Task<AzureOperationResponse<Azure.Management.MachineLearning.WebServices.Models.WebService>> GetWebServiceDefinitionWithHttpMessagesAsync(string workspaceId, string experimentId, string workspaceAuthorizationToken, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            var newCustomHeaders = customHeaders;
-            var newCustomHeaderList = new List<string>();
-
-            newCustomHeaderList.Add(workspaceAuthorizationToken);
-
-            customHeaders.Add("x-ms-metaanalytics-authorizationtoken", newCustomHeaderList);
-
-            return await this.GetWebServiceDefinitionWithHttpMessagesAsync(workspaceId, experimentId, newCustomHeaders, cancellationToken);
-        }
-
         /// <summary>
         /// Gets a web service definition
         /// </summary>
@@ -233,9 +231,9 @@ namespace Microsoft.Azure.MachineLearning
         /// <param name='cancellationToken'>
         /// The cancellation token.
         /// </param>
-        public async Task<Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebService> GetWebServiceDefinitionAsync(string workspaceId, string experimentId, string workspaceAuthorizationToken, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebServicePropertiesForGraph> GetWebServiceDefinitionAsync(string workspaceId, string experimentId, string workspaceAuthorizationToken, Dictionary<string, List<string>> customHeaders = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            using (var _result = await this.GetWebServiceDefinitionWithHttpMessagesAsync(workspaceId, experimentId, workspaceAuthorizationToken, null, cancellationToken).ConfigureAwait(false))
+            using (var _result = await this.GetWebServiceDefinitionWithHttpMessagesAsync(workspaceId, experimentId, workspaceAuthorizationToken, customHeaders, cancellationToken).ConfigureAwait(false))
             {
                 return _result.Body;
             }
@@ -250,10 +248,10 @@ namespace Microsoft.Azure.MachineLearning
         /// <param name='experimentId'>
         /// The id of the experiment within the workspace referred to by workspaceId.
         /// </param>
-        public Azure.Management.MachineLearning.WebServices.Models.WebService GetWebServiceDefinition(string workspaceId, string experimentId, string workspaceAuthorizationToken)
+        public Azure.Management.MachineLearning.WebServices.Models.WebServicePropertiesForGraph GetWebServiceDefinition(string workspaceId, string experimentId, string workspaceAuthorizationToken, Dictionary<string, List<string>> customHeaders = null)
         {
             // s is the state object we pass through. Here I pass this as the state object. This then gets passed as an object and so it must be cast to a member of this class.
-            return Task.Factory.StartNew(s => ((StudioServiceClient)s).GetWebServiceDefinitionAsync(workspaceId, experimentId, workspaceAuthorizationToken), this, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Default).Unwrap().GetAwaiter().GetResult();
+            return Task.Factory.StartNew(s => ((StudioServiceClient)s).GetWebServiceDefinitionAsync(workspaceId, experimentId, workspaceAuthorizationToken, customHeaders), this, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Default).Unwrap().GetAwaiter().GetResult();
         }
 
     }

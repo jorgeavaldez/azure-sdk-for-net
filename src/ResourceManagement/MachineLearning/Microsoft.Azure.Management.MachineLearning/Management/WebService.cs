@@ -43,8 +43,8 @@ namespace Microsoft.Azure.MachineLearning
         /// </summary>
         public string Title
         {
-            get { return this.Definition.Properties.Title; }
-            set { this.Definition.Properties.Title = value; }
+            get { return this.Definition.Name; }
+            set { this.Definition.Name = value; }
         }
 
         /// <summary>

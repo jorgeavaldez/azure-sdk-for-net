@@ -11,6 +11,11 @@ namespace Microsoft.Azure.Management.MachineLearning.Studio.WebService
     using System;
     using System.Collections.Generic;
     using System.Net.Http;
+    using System.Net.Http.Headers;
+    using System.Text;
+    using System.Text.RegularExpressions;
+    using System.Threading;
+    using System.Threading.Tasks;
     using Microsoft.Rest;
     using Microsoft.Rest.Serialization;
     using Newtonsoft.Json;
@@ -277,6 +282,7 @@ namespace Microsoft.Azure.Management.MachineLearning.Studio.WebService
                 NullValueHandling = NullValueHandling.Ignore,
                 ReferenceLoopHandling = ReferenceLoopHandling.Serialize,
                 ContractResolver = new ReadOnlyJsonContractResolver(),
+                MissingMemberHandling = MissingMemberHandling.Ignore,
                 Converters = new List<JsonConverter>
                     {
                         new Iso8601TimeSpanConverter()
