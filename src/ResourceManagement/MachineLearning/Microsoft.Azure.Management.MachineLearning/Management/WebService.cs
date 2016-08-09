@@ -155,7 +155,7 @@ namespace Microsoft.Azure.MachineLearning
         /// <param name="webServiceDefinitionFilePath">Filepath to the web service definition file.</param>
         /// <param name="resourceGroup">The name of the resource group from which this web service is deployed.</param>
         /// <param name="client">The management services client. Gets passed in by the external management client.</param>
-        public WebService(string webServiceDefinitionFilePath, string resourceGroup, AzureMLWebServicesManagementClient client)
+        internal WebService(string webServiceDefinitionFilePath, string resourceGroup, AzureMLWebServicesManagementClient client)
         {
             Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebService ws =
                 this.InputWebServiceFromWSDFile( webServiceDefinitionFilePath);
@@ -171,7 +171,7 @@ namespace Microsoft.Azure.MachineLearning
         /// <param name="definitionWebService">The AutoRest generated web service to use as the definition for this web service.</param>
         /// <param name="resourceGroup">The resource group of the specified web service.</param>
         /// <param name="client">The management services client. Gets passed in by the external management client.</param>
-        public WebService(Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebService definitionWebService, string resourceGroup, AzureMLWebServicesManagementClient client)
+        internal WebService(Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebService definitionWebService, string resourceGroup, AzureMLWebServicesManagementClient client)
         {
             this.Definition = definitionWebService;
             this._client = client;
