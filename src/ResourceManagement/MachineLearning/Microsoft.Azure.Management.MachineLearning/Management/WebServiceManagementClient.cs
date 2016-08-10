@@ -16,7 +16,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Azure.Management.MachineLearning.WebServices;
-using Microsoft.Azure.Management.MachineLearning.Studio.WebService;
 using Microsoft.Azure.Management.MachineLearning.WebServices.Models;
 using Microsoft.Rest;
 using Microsoft.Rest.Azure;
@@ -90,26 +89,7 @@ namespace Microsoft.Azure.MachineLearning
         /// <param name="overwrite">Optional: If a web service with the same name exists, just go ahead and override it if true. Otherwise, throw an exception.</param>
         public void DeployWebService(WebService webService, bool overwrite = false)
         {
-            if (string.IsNullOrEmpty(webService.CommitmentPlan))
-            {
-                throw new InvalidOperationException("The web service you're trying to deploy does not have a CommitmentPlan, you must set one to deploy.");
-            }
-
-            if (string.IsNullOrEmpty(webService.Location))
-            {
-                throw new InvalidOperationException("The web service you're trying to deploy does not have a Location, you must set one to deploy.");
-            }
-
-            if (string.IsNullOrEmpty(webService.ResourceGroupName))
-            {
-                throw new InvalidOperationException("The web service you're trying to deploy does not have a ResourceGroupName, you must set one to deploy.");
-            }
-
-            if (string.IsNullOrEmpty(webService.StorageAccount.Name) ||
-                string.IsNullOrEmpty(webService.StorageAccount.Key))
-            {
-                throw new InvalidOperationException("The web service you're trying to deploy does not have a valid StorageAccount name/key, you must set one to deploy.");
-            }
+            webService.ValidateForDeploy();
 
             if (!overwrite)
             {
@@ -180,7 +160,7 @@ namespace Microsoft.Azure.MachineLearning
 
             var studioDirectWebService = StudioWebServiceClient.GetWebServiceDefinition(workspaceId, experimentId, workspaceAuthorizationToken);
 
-            Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebServicePropertiesForGraph editedStudioDirectWebServiceProperties = new WebServicePropertiesForGraph(
+            var editedStudioDirectWebServiceProperties = new WebServicePropertiesForGraph(
                 studioDirectWebService.Title,
                 studioDirectWebService.Description,
                 studioDirectWebService.CreatedOn,

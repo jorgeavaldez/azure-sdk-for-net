@@ -14,7 +14,6 @@
 //
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using Microsoft.Azure.Management.MachineLearning.WebServices;
 using Microsoft.Azure.Management.MachineLearning.WebServices.Models;
@@ -77,20 +76,26 @@ namespace Microsoft.Azure.MachineLearning
         public WebServiceKeys Keys
         {
             get { return this.Definition.Properties.Keys; }
-            internal set { this.Definition.Properties.Keys = value; }
+            set { this.Definition.Properties.Keys = value; }
         }
 
         /// <summary>
         /// Whether or not this web service is read only.
         /// </summary>
-        public bool ReadOnlyProperty
+        public bool? ReadOnlyProperty
         {
-            get { return this.Definition.Properties.ReadOnlyProperty.Value; }
+            get { return this.Definition.Properties.ReadOnlyProperty; }
             set
             {
-                if (!this.ReadOnlyProperty)
-                {
+                if (this.ReadOnlyProperty.HasValue && this.ReadOnlyProperty.Value == false)
+                { 
+
                     this.Definition.Properties.ReadOnlyProperty = value;
+                }
+                
+                else if (!this.ReadOnlyProperty.HasValue)
+                {
+                    this.Definition.Properties.ReadOnlyProperty = false;
                 }
             }
         }
@@ -191,7 +196,6 @@ namespace Microsoft.Azure.MachineLearning
         /// <summary>
         /// Reads in a web service from a web service definition json file.
         /// </summary>
-        /// <param name="webServiceParameters">Parameters to replace within the file if interpolation parameters exist.</param>
         /// <param name="webServiceDefinitionFilePath">The path to the web service definition file.</param>
         /// <returns>The AutoRest generated web service object.</returns>
         private Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebService InputWebServiceFromWSDFile(string webServiceDefinitionFilePath)
@@ -209,7 +213,6 @@ namespace Microsoft.Azure.MachineLearning
         /// <summary>
         /// Updates this web service and updates the internal state.
         /// </summary>
-        /// <param name="otherWebService">The other web service from which this web service is being updated.</param>
         public void Update()
         {
             Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebService ws = this._client.WebServices.Patch(this.Definition, this.ResourceGroupName, this.Title);
@@ -238,6 +241,33 @@ namespace Microsoft.Azure.MachineLearning
             //
             // Regardless, this is wrong...
             this.Keys = this._client.WebServices.ListKeys(this.ResourceGroupName, this.Title);
+        }
+
+        /// <summary>
+        /// Validates this web service to ensure that the appropriate fields are filled before attempting to deploy it.
+        /// </summary>
+        public void ValidateForDeploy()
+        {
+            if (string.IsNullOrEmpty(this.CommitmentPlan))
+            {
+                throw new InvalidOperationException("The web service you're trying to deploy does not have a CommitmentPlan, you must set one to deploy.");
+            }
+
+            if (string.IsNullOrEmpty(this.Location))
+            {
+                throw new InvalidOperationException("The web service you're trying to deploy does not have a Location, you must set one to deploy.");
+            }
+
+            if (string.IsNullOrEmpty(this.ResourceGroupName))
+            {
+                throw new InvalidOperationException("The web service you're trying to deploy does not have a ResourceGroupName, you must set one to deploy.");
+            }
+
+            if (string.IsNullOrEmpty(this.StorageAccount.Name) ||
+                string.IsNullOrEmpty(this.StorageAccount.Key))
+            {
+                throw new InvalidOperationException("The web service you're trying to deploy does not have a valid StorageAccount name/key, you must set one to deploy.");
+            }
         }
     }
 }

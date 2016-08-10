@@ -6,7 +6,7 @@
 // Changes may cause incorrect behavior and will be lost if the code is
 // regenerated.
 
-namespace Microsoft.Azure.Management.MachineLearning.Studio.WebService
+namespace Microsoft.Azure.MachineLearning
 {
     using System;
     using System.Collections.Generic;
@@ -34,7 +34,7 @@ namespace Microsoft.Azure.Management.MachineLearning.Studio.WebService
     /// Subscription&lt;/li&gt;&lt;li&gt;Get Web Services
     /// Keys&lt;/li&gt;&lt;/ul&gt;
     /// </summary>
-    public partial class StudioWebService : ServiceClient<StudioWebService>, IStudioWebService, IAzureClient
+    public partial class StudioWebService : ServiceClient<StudioWebService>,  IAzureClient
     {
         /// <summary>
         /// The base URI of the service.
@@ -257,7 +257,6 @@ namespace Microsoft.Azure.Management.MachineLearning.Studio.WebService
         /// </summary>
         private void Initialize()
         {
-            this.WebServiceDefinition = new WebServiceDefinitionOperations(this);
             this.BaseUri = new Uri("https://studio.azureml.net/api/");
             this.AcceptLanguage = "en-US";
             this.LongRunningOperationRetryTimeout = 30;

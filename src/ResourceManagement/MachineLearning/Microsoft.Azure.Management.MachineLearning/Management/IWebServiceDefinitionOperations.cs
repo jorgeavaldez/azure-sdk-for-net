@@ -6,13 +6,12 @@
 // Changes may cause incorrect behavior and will be lost if the code is
 // regenerated.
 
-namespace Microsoft.Azure.Management.MachineLearning.Studio.WebService
+namespace Microsoft.Azure.MachineLearning
 {
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Rest.Azure;
-    using Models;
 
     /// <summary>
     /// WebServiceDefinitionOperations operations.
