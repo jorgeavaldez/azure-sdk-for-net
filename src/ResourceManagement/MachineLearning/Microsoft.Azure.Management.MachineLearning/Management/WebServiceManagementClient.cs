@@ -201,11 +201,49 @@ namespace Microsoft.Azure.MachineLearning
         /// </summary>
         /// <param name="resourceGroupName">The resource group from which to retrieve the list of web services.</param>
         /// <returns>A list of web services from the specified resource group.</returns>
-        public List<WebService> ListWebServicesFromResourceGroup(string resourceGroupName)
+        public List<WebService> ListWebServicesFromResourceGroup(string resourceGroupName, string skiptoken = default(string))
         {
-            var intermediateWebServices = this._client.WebServices.ListInResourceGroup(resourceGroupName).Value;
-            var finalWebServiceObjects = new List<WebService>();
+            var webServicePage = this._client.WebServices.ListInResourceGroup(resourceGroupName, skiptoken);
+            var accumulatedWebServices = new List<WebService>();
 
+            // We're gonna implement a linked list accumulation-type method
+            // For every link from ListInResourceGroup with the skip token, we push every web service in that link into accumulatedWebServices
+            // and call the function again with the nextLink value as the skip token.
+
+            // First let's get the skip token
+            var nextLinkToken = webServicePage.NextLink;
+
+            // Now we're going to loop while !token.isnullorwhitespace
+            do
+            {
+                /*
+                * And we have to
+                * 1. add all of the web services in this page's collection to the accumulated web services list
+                * 2. call for the next page
+                * 3. replace this page with the next page
+                * 4. replace this skip token with the next token
+                */
+
+                var servicesCollection = webServicePage.Value;
+
+                foreach (var service in servicesCollection)
+                {
+                    // 1
+                    // Cast the service to one of our web services
+                    var castWebService = new WebService(service, resourceGroupName, this._client);
+                    accumulatedWebServices.Add(castWebService);
+                }
+
+                // 2 + 3
+                webServicePage = this._client.WebServices.ListInResourceGroup(resourceGroupName, nextLinkToken);
+
+                // 4 
+                nextLinkToken = webServicePage.NextLink;
+            } while (!(String.IsNullOrWhiteSpace(nextLinkToken)));
+
+            return accumulatedWebServices;
+
+            /*
             foreach (var ws in intermediateWebServices)
             {
                 if (!(String.IsNullOrWhiteSpace(ws.Name)) && !(String.IsNullOrWhiteSpace(ws.Properties.Title)))
@@ -216,6 +254,7 @@ namespace Microsoft.Azure.MachineLearning
             }
 
             return finalWebServiceObjects;
+            */
         }
 
         /// <summary>
