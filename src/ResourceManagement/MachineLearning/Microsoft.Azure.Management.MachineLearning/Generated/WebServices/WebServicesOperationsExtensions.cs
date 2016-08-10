@@ -45,7 +45,7 @@ namespace Microsoft.Azure.Management.MachineLearning.WebServices
             /// <summary>
             /// Creates or updates a new Azure ML web service or update an existing one.
             /// </summary>
-            /// <param name='operations'>
+            /// <param name='operations'>Location
             /// The operations group for this extension method.
             /// </param>
             /// <param name='createOrUpdatePayload'>
