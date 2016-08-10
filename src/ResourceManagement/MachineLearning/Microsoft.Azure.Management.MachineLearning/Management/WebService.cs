@@ -59,26 +59,17 @@ namespace Microsoft.Azure.MachineLearning
         /// <summary>
         /// DateTime for when this web service was created. Is readonly.
         /// </summary>
-        public DateTime? CreatedOn
-        {
-            get { return this.Definition.Properties.CreatedOn; }
-        }
+        public DateTime? CreatedOn => this.Definition.Properties.CreatedOn;
 
         /// <summary>
         /// DateTime for when this web service was last modified. Is readonly.
         /// </summary>
-        public DateTime? ModifiedOn
-        {
-            get { return this.Definition.Properties.ModifiedOn.Value; }
-        }
+        public DateTime? ModifiedOn => this.Definition.Properties.ModifiedOn.Value;
 
         /// <summary>
         /// Provisioning state of this web service. One of 'Unknown', 'Provisioning', 'Succeeded', 'Failed', or 'Canceled'.
         /// </summary>
-        public string ProvisioningState 
-        {
-            get { return this.Definition.Properties.ProvisioningState; }
-        }
+        public string ProvisioningState => this.Definition.Properties.ProvisioningState;
 
         /// <summary>
         /// Keys for this web service.
@@ -139,6 +130,25 @@ namespace Microsoft.Azure.MachineLearning
         public StorageAccount StorageAccount
         {
             get { return this.Definition.Properties.StorageAccount; }
+            set { this.Definition.Properties.StorageAccount = value; }
+        }
+
+        /// <summary>
+        /// CommitmentPlan's ARM resource ID.
+        /// </summary>
+        public string CommitmentPlan
+        {
+            get { return this.Definition.Properties.CommitmentPlan.Id; }
+            set { this.Definition.Properties.CommitmentPlan = new CommitmentPlan(value); }
+        }
+
+        /// <summary>
+        /// The web service location.
+        /// </summary>
+        public string Location
+        {
+            get { return this.Definition.Location; }
+            set { this.Definition.Location = value; }
         }
 
         /// <summary>

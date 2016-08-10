@@ -90,6 +90,27 @@ namespace Microsoft.Azure.MachineLearning
         /// <param name="overwrite">Optional: If a web service with the same name exists, just go ahead and override it if true. Otherwise, throw an exception.</param>
         public void DeployWebService(WebService webService, bool overwrite = false)
         {
+            if (string.IsNullOrEmpty(webService.CommitmentPlan))
+            {
+                throw new InvalidOperationException("The web service you're trying to deploy does not have a CommitmentPlan, you must set one to deploy.");
+            }
+
+            if (string.IsNullOrEmpty(webService.Location))
+            {
+                throw new InvalidOperationException("The web service you're trying to deploy does not have a Location, you must set one to deploy.");
+            }
+
+            if (string.IsNullOrEmpty(webService.ResourceGroupName))
+            {
+                throw new InvalidOperationException("The web service you're trying to deploy does not have a ResourceGroupName, you must set one to deploy.");
+            }
+
+            if (string.IsNullOrEmpty(webService.StorageAccount.Name) ||
+                string.IsNullOrEmpty(webService.StorageAccount.Key))
+            {
+                throw new InvalidOperationException("The web service you're trying to deploy does not have a valid StorageAccount name/key, you must set one to deploy.");
+            }
+
             if (!overwrite)
             {
                 var webServiceExists = false;
@@ -155,13 +176,11 @@ namespace Microsoft.Azure.MachineLearning
         /// <returns>The web service itself.</returns>
         public WebService GetWebServiceFromExperiment(string workspaceId, string experimentId, string workspaceAuthorizationToken)
         {
-            // TODO: Fill in missing info from provided user stuff.
-
             var subscriptionId = this._client.SubscriptionId;
 
             var studioDirectWebService = StudioWebServiceClient.GetWebServiceDefinition(workspaceId, experimentId, workspaceAuthorizationToken);
 
-            Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebServiceProperties editedStudioDirectWebServiceProperties = new WebServiceProperties(
+            Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebServicePropertiesForGraph editedStudioDirectWebServiceProperties = new WebServicePropertiesForGraph(
                 studioDirectWebService.Title,
                 studioDirectWebService.Description,
                 studioDirectWebService.CreatedOn,
@@ -180,10 +199,10 @@ namespace Microsoft.Azure.MachineLearning
                 studioDirectWebService.Output,
                 studioDirectWebService.ExampleRequest,
                 studioDirectWebService.Assets,
-                studioDirectWebService.Parameters);
+                studioDirectWebService.Parameters,
+                studioDirectWebService.Package);
 
             // All of the null properties should be filled in by the user before they try to deploy this web service.
-            // TODO: validate this stuff before deployment
             Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebService editedStudioDirectWebService = new Management.MachineLearning.WebServices.Models.WebService(
                 null,
                 editedStudioDirectWebServiceProperties,
