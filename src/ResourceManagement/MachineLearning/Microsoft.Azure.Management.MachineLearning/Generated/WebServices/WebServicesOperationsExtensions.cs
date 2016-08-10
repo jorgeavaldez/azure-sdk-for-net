@@ -227,7 +227,7 @@ namespace Microsoft.Azure.Management.MachineLearning.WebServices
             /// </summary>
             /// <param name='operations'>
             /// The operations group for this extension method.
-            /// </param>Location
+            /// </param>
             /// <param name='patchPayload'>
             /// The payload to patch the Azure ML web service with.
             /// </param>
