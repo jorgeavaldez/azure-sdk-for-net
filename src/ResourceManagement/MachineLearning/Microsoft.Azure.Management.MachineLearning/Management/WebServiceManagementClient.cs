@@ -239,22 +239,9 @@ namespace Microsoft.Azure.MachineLearning
 
                 // 4 
                 nextLinkToken = webServicePage.NextLink;
-            } while (!(String.IsNullOrWhiteSpace(nextLinkToken)));
+            } while (!(string.IsNullOrWhiteSpace(nextLinkToken)));
 
             return accumulatedWebServices;
-
-            /*
-            foreach (var ws in intermediateWebServices)
-            {
-                if (!(String.IsNullOrWhiteSpace(ws.Name)) && !(String.IsNullOrWhiteSpace(ws.Properties.Title)))
-                {
-                    var castWebService = new WebService(ws, resourceGroupName, this._client);
-                    finalWebServiceObjects.Add(castWebService);
-                }
-            }
-
-            return finalWebServiceObjects;
-            */
         }
 
         /// <summary>
@@ -263,17 +250,26 @@ namespace Microsoft.Azure.MachineLearning
         /// <returns>A list of web services from the client subscription.</returns>
         public List<WebService> ListWebServicesFromSubscription()
         {
-            var webServices = this._client.WebServices.List().Value;
-            var webServiceObjects = new List<WebService>();
+            var webServicePage = this._client.WebServices.List();
+            var accumulatedWebServices = new List<WebService>();
+            var nextLinkToken = webServicePage.NextLink;
 
-            foreach (var ws in webServices)
+            do
             {
-                // TODO: Get resource group from web service ID.
+                var servicesCollection = webServicePage.Value;
 
-                webServiceObjects.Add(new WebService(ws, "", this._client));
-            }
+                foreach (var service in servicesCollection)
+                {
+                    var castWebService = new WebService(service, string.Empty, this._client); 
+                    accumulatedWebServices.Add(castWebService);
+                }
 
-            return webServiceObjects;
+                webServicePage = this._client.WebServices.List(nextLinkToken);
+
+                nextLinkToken = webServicePage.NextLink;
+            } while (!(string.IsNullOrWhiteSpace(nextLinkToken)));
+
+            return accumulatedWebServices;
         }
     }
 }
