@@ -223,11 +223,29 @@ namespace Microsoft.Azure.MachineLearning
         }
 
         /// <summary>
+        /// Updates this web service and updates the internal state asynchronously.
+        /// </summary>
+        public async void UpdateAsync()
+        {
+            Microsoft.Azure.Management.MachineLearning.WebServices.Models.WebService ws = await this._client.WebServices.PatchAsync(this.Definition, this.ResourceGroupName, this.Title);
+
+            this.Definition = ws;
+        }
+
+        /// <summary>
         /// Deletes this deployed web service.
         /// </summary>
         public void Delete()
         {
             this._client.WebServices.Remove(this.ResourceGroupName, this.Title);
+        }
+
+        /// <summary>
+        /// Deletes this deployed web service asynchronously.
+        /// </summary>
+        public async void DeleteAsync()
+        {
+            await this._client.WebServices.RemoveAsync(this.ResourceGroupName, this.Title);
         }
 
         /// <summary>
