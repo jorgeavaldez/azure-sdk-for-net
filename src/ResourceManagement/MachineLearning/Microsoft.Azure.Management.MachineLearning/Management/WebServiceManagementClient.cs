@@ -101,7 +101,7 @@ namespace Microsoft.Azure.MachineLearning
                     webServiceExists = true;
                 }
 
-                catch (CloudException cloudException)
+                catch (CloudException)
                 {
                     this._client.WebServices.CreateOrUpdate(webService.Definition, webService.ResourceGroupName,
                         webService.Title);
@@ -109,7 +109,7 @@ namespace Microsoft.Azure.MachineLearning
                     webService.Keys = this._client.WebServices.ListKeys(webService.ResourceGroupName, webService.Title);
                 }
 
-                catch (ValidationException validationException)
+                catch (ValidationException)
                 {
                     this._client.WebServices.CreateOrUpdate(webService.Definition, webService.ResourceGroupName,
                         webService.Title);
@@ -224,6 +224,7 @@ namespace Microsoft.Azure.MachineLearning
         /// </summary>
         /// <param name="workspaceId">The workspace ID of the experiment.</param>
         /// <param name="experimentId">The experiment's ID.</param>
+        /// <param name="workspaceAuthorizationToken">The token used to identify your workspace.</param>
         /// <returns>The web service itself.</returns>
         public WebService GetWebServiceFromExperiment(string workspaceId, string experimentId, string workspaceAuthorizationToken)
         {
@@ -272,6 +273,7 @@ namespace Microsoft.Azure.MachineLearning
         /// </summary>
         /// <param name="workspaceId">The workspace ID of the experiment.</param>
         /// <param name="experimentId">The experiment's ID.</param>
+        /// <param name="workspaceAuthorizationToken">The token used to identify your workspace.</param>
         /// <returns>The web service itself.</returns>
         public async Task<WebService> GetWebServiceFromExperimentAsync(string workspaceId, string experimentId,
             string workspaceAuthorizationToken)
